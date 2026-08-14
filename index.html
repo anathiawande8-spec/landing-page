@@ -1,0 +1,498 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Teacher Assistant AI</title>
+<meta name="description" content="Teacher Assistant AI helps South African teachers generate CAPS-aligned exam papers, tests, worksheets, assignments and memoranda in minutes.">
+<style>
+  /* ---- Light palette (default, un-stamped state) ---- */
+  :root {
+    --paper: #efeadd;
+    --paper-raised: #f8f5ec;
+    --paper-line: #e2dac2;
+    --ink: #211d18;
+    --ink-soft: #66604f;
+    --ink-faint: #8f8873;
+    --rule: #d9d0b4;
+    --marker: #a23328;
+    --marker-ink: #7a241c;
+    --marker-soft: #f1ddd3;
+    --focus: #1d5c8a;
+  }
+
+  /* System dark, only when the viewer hasn't explicitly chosen light */
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --paper: #1b1815;
+      --paper-raised: #252019;
+      --paper-line: #3a3226;
+      --ink: #ece3d2;
+      --ink-soft: #b7ab90;
+      --ink-faint: #83795f;
+      --rule: #423a2b;
+      --marker: #e2685a;
+      --marker-ink: #f0897c;
+      --marker-soft: #3a2620;
+      --focus: #7db8dd;
+    }
+  }
+
+  /* Explicit toggle to dark always wins */
+  :root[data-theme="dark"] {
+    --paper: #1b1815;
+    --paper-raised: #252019;
+    --paper-line: #3a3226;
+    --ink: #ece3d2;
+    --ink-soft: #b7ab90;
+    --ink-faint: #83795f;
+    --rule: #423a2b;
+    --marker: #e2685a;
+    --marker-ink: #f0897c;
+    --marker-soft: #3a2620;
+    --focus: #7db8dd;
+  }
+
+  * { box-sizing: border-box; }
+
+  html, body {
+    margin: 0;
+    padding: 0;
+    background: var(--paper);
+    color: var(--ink);
+  }
+
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    line-height: 1.55;
+    -webkit-font-smoothing: antialiased;
+    overflow-x: hidden;
+  }
+
+  ::selection { background: var(--marker-soft); color: var(--marker-ink); }
+
+  a { color: inherit; }
+  a:focus-visible, button:focus-visible { outline: 2px solid var(--focus); outline-offset: 3px; }
+
+  h1, h2, h3, .display {
+    font-family: Georgia, "Iowan Old Style", "Palatino Linotype", "Book Antiqua", serif;
+    text-wrap: balance;
+  }
+
+  .mono {
+    font-family: ui-monospace, "SF Mono", "Cascadia Mono", "Consolas", monospace;
+    font-variant-numeric: tabular-nums;
+  }
+
+  .wrap {
+    max-width: 1080px;
+    margin: 0 auto;
+    padding: 0 24px;
+  }
+
+  .eyebrow {
+    font-family: ui-monospace, "SF Mono", "Cascadia Mono", "Consolas", monospace;
+    font-size: 0.72rem;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--ink-faint);
+  }
+
+  /* ---------- Header ---------- */
+  header {
+    padding: 22px 0;
+    border-bottom: 1px solid var(--rule);
+  }
+  .brand {
+    display: flex;
+    align-items: baseline;
+    gap: 9px;
+    text-decoration: none;
+  }
+  .brand-mark {
+    font-family: Georgia, serif;
+    font-weight: 700;
+    font-size: 1.2rem;
+    width: 30px;
+    height: 30px;
+    border: 1.5px solid var(--ink);
+    border-radius: 50%;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    line-height: 1;
+  }
+  .brand-name {
+    font-family: Georgia, serif;
+    font-weight: 700;
+    font-size: 1.12rem;
+    letter-spacing: 0.01em;
+  }
+
+  /* ---------- Hero ---------- */
+  .hero {
+    padding: 72px 0 56px;
+    display: grid;
+    grid-template-columns: 1.05fr 0.95fr;
+    gap: 56px;
+    align-items: center;
+  }
+  .hero-copy .eyebrow { margin-bottom: 18px; display: block; }
+  h1 {
+    font-size: clamp(2rem, 4.2vw, 3rem);
+    line-height: 1.08;
+    margin: 0 0 22px;
+    font-weight: 700;
+  }
+  h1 em {
+    font-style: normal;
+    box-shadow: inset 0 -0.34em 0 var(--marker-soft);
+  }
+  .lede {
+    font-size: clamp(1rem, 1.6vw, 1.14rem);
+    color: var(--ink-soft);
+    max-width: 46ch;
+    margin: 0 0 30px;
+  }
+  .fact-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 22px;
+  }
+  .fact {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+  }
+  .fact b {
+    font-family: Georgia, serif;
+    font-size: 1.02rem;
+  }
+  .fact span {
+    font-size: 0.78rem;
+    color: var(--ink-faint);
+  }
+
+  /* ---------- Hero exam-cover mock ---------- */
+  .cover-stage {
+    display: flex;
+    justify-content: center;
+    perspective: 1200px;
+  }
+  .cover {
+    background: var(--paper-raised);
+    border: 1px solid var(--rule);
+    box-shadow: 0 22px 44px -22px rgba(20, 16, 8, 0.35);
+    width: 100%;
+    max-width: 340px;
+    padding: 26px 24px 22px;
+    transform: rotate(2.5deg);
+    position: relative;
+  }
+  .cover::before {
+    content: "";
+    position: absolute;
+    inset: 10px;
+    border: 1px solid var(--rule);
+    pointer-events: none;
+  }
+  .cover-tag {
+    position: absolute;
+    top: -11px;
+    right: 20px;
+    background: var(--marker);
+    color: var(--paper-raised);
+    font-family: ui-monospace, monospace;
+    font-size: 0.62rem;
+    letter-spacing: 0.1em;
+    padding: 4px 9px;
+    transform: rotate(-3deg);
+  }
+  .cover-head {
+    text-align: center;
+    padding-bottom: 14px;
+    margin-bottom: 14px;
+    border-bottom: 1.5px solid var(--ink);
+  }
+  .cover-head .eyebrow { margin-bottom: 6px; }
+  .cover-head h2 {
+    margin: 0;
+    font-size: 1.3rem;
+    line-height: 1.15;
+  }
+  .cover-meta {
+    display: flex;
+    justify-content: space-between;
+    font-family: ui-monospace, monospace;
+    font-size: 0.72rem;
+    color: var(--ink-soft);
+    margin-bottom: 16px;
+    padding-bottom: 12px;
+    border-bottom: 1px dashed var(--rule);
+  }
+  .cover-q {
+    display: flex;
+    gap: 10px;
+    font-size: 0.82rem;
+    margin-bottom: 10px;
+    align-items: baseline;
+  }
+  .cover-q .num { font-family: ui-monospace, monospace; color: var(--ink-faint); flex-shrink: 0; }
+  .cover-q .txt { flex: 1; }
+  .cover-q .marks {
+    font-family: ui-monospace, monospace;
+    color: var(--ink-faint);
+    flex-shrink: 0;
+  }
+  .tick {
+    display: inline-block;
+    width: 13px;
+    height: 13px;
+    vertical-align: -2px;
+    margin-right: 3px;
+    flex-shrink: 0;
+  }
+  .cover-total {
+    margin-top: 18px;
+    display: flex;
+    justify-content: flex-end;
+  }
+  .total-ring {
+    width: 46px;
+    height: 46px;
+    border: 2px solid var(--marker);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transform: rotate(-6deg);
+    font-family: ui-monospace, monospace;
+    font-weight: 700;
+    color: var(--marker-ink);
+    font-size: 0.95rem;
+  }
+
+  /* ---------- Section shell ---------- */
+  section { padding: 12px 0 64px; }
+  .section-head { max-width: 56ch; margin-bottom: 30px; }
+  .section-head .eyebrow { margin-bottom: 10px; display: block; }
+  .section-head h2 { font-size: 1.6rem; margin: 0 0 8px; }
+  .section-head p { margin: 0; color: var(--ink-soft); }
+
+  /* ---------- Feature cards (index-card styling) ---------- */
+  .cards {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 18px;
+  }
+  .card {
+    background: var(--paper-raised);
+    border: 1px solid var(--rule);
+    border-left: 3px solid var(--marker);
+    padding: 22px 22px 20px;
+    position: relative;
+    transition: transform 0.15s ease, box-shadow 0.15s ease;
+  }
+  .card:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 14px 26px -18px rgba(20, 16, 8, 0.4);
+  }
+  .card .idx {
+    font-family: ui-monospace, monospace;
+    font-size: 0.72rem;
+    color: var(--marker-ink);
+    letter-spacing: 0.06em;
+    display: block;
+    margin-bottom: 10px;
+  }
+  .card h3 {
+    margin: 0 0 8px;
+    font-size: 1.04rem;
+    font-weight: 700;
+  }
+  .card p {
+    margin: 0;
+    color: var(--ink-soft);
+    font-size: 0.92rem;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .card { transition: none; }
+  }
+
+  /* ---------- Margin note (status) ---------- */
+  .margin-note {
+    display: grid;
+    grid-template-columns: auto 1fr;
+    gap: 16px;
+    background: var(--marker-soft);
+    border: 1px solid var(--rule);
+    padding: 22px 24px;
+  }
+  .margin-note .glyph {
+    font-family: Georgia, serif;
+    font-size: 1.6rem;
+    color: var(--marker-ink);
+    line-height: 1;
+  }
+  .margin-note h2 {
+    font-size: 1.08rem;
+    margin: 0 0 6px;
+  }
+  .margin-note p {
+    margin: 0;
+    color: var(--ink-soft);
+    font-size: 0.92rem;
+    max-width: 60ch;
+  }
+
+  /* ---------- Footer ---------- */
+  footer {
+    border-top: 1px solid var(--rule);
+    padding: 26px 0 40px;
+    color: var(--ink-faint);
+    font-size: 0.82rem;
+  }
+  footer .wrap {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    justify-content: space-between;
+  }
+
+  /* ---------- Page-load reveal ---------- */
+  .reveal {
+    animation: rise 0.5s ease both;
+  }
+  .reveal.d1 { animation-delay: 0.06s; }
+  .reveal.d2 { animation-delay: 0.14s; }
+  @keyframes rise {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .reveal { animation: none; }
+  }
+
+  @media (max-width: 860px) {
+    .hero { grid-template-columns: 1fr; padding-top: 44px; }
+    .cover-stage { order: -1; }
+    .cover { transform: rotate(1.4deg); max-width: 380px; }
+  }
+</style>
+</head>
+<body>
+  <header>
+    <div class="wrap">
+      <a class="brand" href="/">
+        <span class="brand-mark" aria-hidden="true">T</span>
+        <span class="brand-name">Teacher Assistant AI</span>
+      </a>
+    </div>
+  </header>
+
+  <main>
+    <div class="wrap hero">
+      <div class="hero-copy reveal">
+        <span class="eyebrow">In active development</span>
+        <h1>Exam papers that mark<br>their own margins<br><em>before you print them.</em></h1>
+        <p class="lede">
+          Teacher Assistant AI generates CAPS-aligned exam papers, tests, worksheets
+          and assignments for South African teachers — cover page, questions and
+          memorandum together, with marks that always add up.
+        </p>
+        <div class="fact-row">
+          <div class="fact"><b>CAPS-aligned</b><span>Curriculum &amp; grade specific</span></div>
+          <div class="fact"><b>Paper + memo</b><span>Generated together</span></div>
+          <div class="fact"><b>Any device</b><span>Phone after school, desktop to plan</span></div>
+        </div>
+      </div>
+
+      <div class="cover-stage reveal d1">
+        <div class="cover" role="img" aria-label="Sample generated test cover page: Grade 10 Mathematics, Term 2, 50 marks, two sample questions, total circled in red">
+          <span class="cover-tag">SAMPLE OUTPUT</span>
+          <div class="cover-head">
+            <span class="eyebrow">Grade 10 · Mathematics</span>
+            <h2>Test — Term 2</h2>
+          </div>
+          <div class="cover-meta">
+            <span>MARKS: 50</span>
+            <span>TIME: 1 hour</span>
+          </div>
+          <div class="cover-q">
+            <span class="num">1.1</span>
+            <span class="txt">
+              <svg class="tick" viewBox="0 0 16 16" aria-hidden="true"><path d="M2 8.5 L6 12.5 L14 3" fill="none" stroke="var(--marker)" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+              Solve for x: 2x + 4 = 10
+            </span>
+            <span class="marks">(3)</span>
+          </div>
+          <div class="cover-q">
+            <span class="num">1.2</span>
+            <span class="txt">
+              <svg class="tick" viewBox="0 0 16 16" aria-hidden="true"><path d="M2 8.5 L6 12.5 L14 3" fill="none" stroke="var(--marker)" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+              Factorise: x² − 9
+            </span>
+            <span class="marks">(3)</span>
+          </div>
+          <div class="cover-q">
+            <span class="num">2.1</span>
+            <span class="txt">A rectangle has a perimeter of 24cm…</span>
+            <span class="marks">(4)</span>
+          </div>
+          <div class="cover-total">
+            <span class="total-ring">50</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <section>
+      <div class="wrap">
+        <div class="section-head">
+          <span class="eyebrow">How it holds together</span>
+          <h2>Structured, not scraped together.</h2>
+          <p>Every paper is built from the same three guarantees, so nothing quietly breaks when you edit one question at 9pm the night before.</p>
+        </div>
+        <div class="cards">
+          <div class="card">
+            <span class="idx">01</span>
+            <h3>Editable by question</h3>
+            <p>Papers are generated as structured content, not a block of text — so you can regenerate or rewrite a single question without touching the rest.</p>
+          </div>
+          <div class="card">
+            <span class="idx">02</span>
+            <h3>Reviewed before you see it</h3>
+            <p>A second automated pass checks grammar, mark totals, duplicate questions and formatting before the paper ever reaches your screen.</p>
+          </div>
+          <div class="card">
+            <span class="idx">03</span>
+            <h3>Paper and memo, together</h3>
+            <p>Tests, exams, worksheets and assignments are generated with a matching memorandum in the same pass — never as an afterthought.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section>
+      <div class="wrap">
+        <div class="margin-note">
+          <span class="glyph" aria-hidden="true">✎</span>
+          <div>
+            <h2>Built in the open, right now</h2>
+            <p>Teacher Assistant AI is in active development. This page is the project's public home while the product gets built — there's no signup yet, but there will be.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer>
+    <div class="wrap">
+      <span>© 2026 Teacher Assistant AI</span>
+      <span>Made for South African teachers</span>
+    </div>
+  </footer>
+</body>
+</html>

@@ -1,0 +1,21 @@
+# Secrets / credentials - never commit these
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+*.p12
+.aws/
+.wrangler/
+credentials.json
+
+# OS / editor cruft
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
+
+# Dependencies / build output (if tooling is added later)
+node_modules/
+dist/
+build/
