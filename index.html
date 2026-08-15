@@ -114,6 +114,16 @@
     .mascot{position:static;width:120px;margin-bottom:18px}
     .cover{position:static;transform:rotate(0);max-width:340px}
   }
+
+  /* Idle animation on the hero mascot only - not the small header/footer
+     logo marks, which should stay still and legible as a wordmark icon. */
+  .mascot{animation:mascot-bob 3.6s ease-in-out infinite}
+  @keyframes mascot-bob{0%,100%{transform:translateY(0)}50%{transform:translateY(-4px)}}
+  .mascot-eye{transform-box:fill-box;transform-origin:center;animation:mascot-blink 5.5s ease-in-out infinite}
+  @keyframes mascot-blink{0%,90%,100%{transform:scaleY(1)}93%{transform:scaleY(.15)}96%{transform:scaleY(1)}}
+  @media (prefers-reduced-motion:reduce){
+    .mascot,.mascot-eye{animation:none}
+  }
   .cover-tag{display:inline-block;background:var(--pink);color:#fff;font-size:.62rem;font-weight:700;letter-spacing:.08em;text-transform:uppercase;padding:4px 10px;border-radius:999px;margin-bottom:12px}
   .cover-head{text-align:center;padding-bottom:12px;margin-bottom:12px;border-bottom:2px solid var(--ink)}
   .cover-head h2{font-size:1.1rem;font-weight:800}
@@ -251,10 +261,14 @@
 
         <div class="hero-art reveal in">
           <svg class="mascot" viewBox="0 0 64 64" fill="none" aria-hidden="true">
-            <g transform="rotate(-7 32 32)">
+            <g class="mascot-head" transform="rotate(-7 32 32)">
               <g fill="#E8508D"><circle cx="32" cy="14" r="11"/><circle cx="19" cy="20" r="9"/><circle cx="45" cy="20" r="9"/><circle cx="15" cy="31" r="7.5"/><circle cx="49" cy="31" r="7.5"/><circle cx="32" cy="24" r="13"/></g>
               <ellipse cx="32" cy="31" rx="11" ry="11" fill="#fff"/>
-              <g stroke="#0A2540" stroke-width="2.4" fill="none"><circle cx="26.4" cy="29" r="4.8"/><circle cx="37.6" cy="29" r="4.8"/><path d="M31.2 29h1.6"/></g>
+              <g stroke="#0A2540" stroke-width="2.4" fill="none">
+                <circle class="mascot-eye" cx="26.4" cy="29" r="4.8"/>
+                <circle class="mascot-eye" cx="37.6" cy="29" r="4.8"/>
+                <path d="M31.2 29h1.6"/>
+              </g>
             </g>
             <g stroke="#C93B75" stroke-width="2.8" stroke-linejoin="round" fill="#fff"><path d="M32 49C25 45 16 44 9 46v10c7-2 16-1 23 3Z"/><path d="M32 49c7-4 16-5 23-3v10c-7-2-16-1-23 3Z"/></g>
           </svg>
