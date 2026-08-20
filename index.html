@@ -107,11 +107,15 @@
      collapsing the container to the mascot's height alone and making the
      two overlap illegibly. */
   .hero-art{position:relative;min-height:400px}
-  .mascot{position:absolute;top:0;left:6%;width:150px;filter:drop-shadow(0 18px 30px rgba(232,80,141,.25));z-index:1}
+  /* .mascot-wrap owns placement + the cursor-follow tilt (JS-driven
+     transform); .mascot (the svg) keeps its own bob/blink keyframes so the
+     two transforms never fight on the same element. */
+  .mascot-wrap{position:absolute;top:0;left:6%;width:150px;z-index:1;will-change:transform}
+  .mascot{display:block;width:100%;filter:drop-shadow(0 18px 30px rgba(232,80,141,.25))}
   .cover{background:var(--card);border:1px solid var(--line);border-radius:20px;box-shadow:var(--shadow);width:100%;max-width:300px;padding:22px 20px 20px;position:absolute;bottom:0;right:0;transform:rotate(3deg);z-index:2}
   @media (max-width:900px){
     .hero-art{min-height:0;display:flex;flex-direction:column;align-items:center}
-    .mascot{position:static;width:120px;margin-bottom:18px}
+    .mascot-wrap{position:static;width:120px;margin-bottom:18px}
     .cover{position:static;transform:rotate(0);max-width:340px}
   }
 
@@ -121,8 +125,26 @@
   @keyframes mascot-bob{0%,100%{transform:translateY(0)}50%{transform:translateY(-4px)}}
   .mascot-eye{transform-box:fill-box;transform-origin:center;animation:mascot-blink 5.5s ease-in-out infinite}
   @keyframes mascot-blink{0%,90%,100%{transform:scaleY(1)}93%{transform:scaleY(.15)}96%{transform:scaleY(1)}}
+  .mascot-wrap{transition:transform .5s cubic-bezier(.2,.8,.2,1)}
   @media (prefers-reduced-motion:reduce){
     .mascot,.mascot-eye{animation:none}
+    .mascot-wrap{transition:none}
+  }
+
+  /* Hero entrance: copy fades up in sequence, mascot+cover pop in with a
+     bouncier overshoot - replaces the old static-on-load hero. */
+  .hero-copy>*{opacity:0;animation:hero-fade-up .7s cubic-bezier(.22,1,.36,1) both}
+  .hero-copy>.eyebrow{animation-delay:.05s}
+  .hero-copy>h1{animation-delay:.15s}
+  .hero-copy>.lede{animation-delay:.3s}
+  .hero-copy>.hero-ctas{animation-delay:.42s}
+  .hero-copy>.fine{animation-delay:.5s}
+  .hero-copy>.fact-row{animation-delay:.56s}
+  @keyframes hero-fade-up{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:translateY(0)}}
+  .hero-art{animation:hero-pop .8s cubic-bezier(.34,1.56,.64,1) .32s both}
+  @keyframes hero-pop{0%{opacity:0;transform:scale(.85) translateY(20px)}60%{opacity:1}100%{opacity:1;transform:scale(1) translateY(0)}}
+  @media (prefers-reduced-motion:reduce){
+    .hero-copy>*,.hero-art{animation:none;opacity:1;transform:none}
   }
   .cover-tag{display:inline-block;background:var(--pink);color:#fff;font-size:.62rem;font-weight:700;letter-spacing:.08em;text-transform:uppercase;padding:4px 10px;border-radius:999px;margin-bottom:12px}
   .cover-head{text-align:center;padding-bottom:12px;margin-bottom:12px;border-bottom:2px solid var(--ink)}
@@ -260,18 +282,20 @@
         </div>
 
         <div class="hero-art reveal in">
-          <svg class="mascot" viewBox="0 0 64 64" fill="none" aria-hidden="true">
-            <g class="mascot-head" transform="rotate(-7 32 32)">
-              <g fill="#E8508D"><circle cx="32" cy="14" r="11"/><circle cx="19" cy="20" r="9"/><circle cx="45" cy="20" r="9"/><circle cx="15" cy="31" r="7.5"/><circle cx="49" cy="31" r="7.5"/><circle cx="32" cy="24" r="13"/></g>
-              <ellipse cx="32" cy="31" rx="11" ry="11" fill="#fff"/>
-              <g stroke="#0A2540" stroke-width="2.4" fill="none">
-                <circle class="mascot-eye" cx="26.4" cy="29" r="4.8"/>
-                <circle class="mascot-eye" cx="37.6" cy="29" r="4.8"/>
-                <path d="M31.2 29h1.6"/>
+          <div class="mascot-wrap">
+            <svg class="mascot" viewBox="0 0 64 64" fill="none" aria-hidden="true">
+              <g class="mascot-head" transform="rotate(-7 32 32)">
+                <g fill="#E8508D"><circle cx="32" cy="14" r="11"/><circle cx="19" cy="20" r="9"/><circle cx="45" cy="20" r="9"/><circle cx="15" cy="31" r="7.5"/><circle cx="49" cy="31" r="7.5"/><circle cx="32" cy="24" r="13"/></g>
+                <ellipse cx="32" cy="31" rx="11" ry="11" fill="#fff"/>
+                <g stroke="#0A2540" stroke-width="2.4" fill="none">
+                  <circle class="mascot-eye" cx="26.4" cy="29" r="4.8"/>
+                  <circle class="mascot-eye" cx="37.6" cy="29" r="4.8"/>
+                  <path d="M31.2 29h1.6"/>
+                </g>
               </g>
-            </g>
-            <g stroke="#C93B75" stroke-width="2.8" stroke-linejoin="round" fill="#fff"><path d="M32 49C25 45 16 44 9 46v10c7-2 16-1 23 3Z"/><path d="M32 49c7-4 16-5 23-3v10c-7-2-16-1-23 3Z"/></g>
-          </svg>
+              <g stroke="#C93B75" stroke-width="2.8" stroke-linejoin="round" fill="#fff"><path d="M32 49C25 45 16 44 9 46v10c7-2 16-1 23 3Z"/><path d="M32 49c7-4 16-5 23-3v10c-7-2-16-1-23 3Z"/></g>
+            </svg>
+          </div>
           <div class="cover" role="img" aria-label="Sample generated test cover page: Grade 10 Mathematics, Term 2, 50 marks, two sample questions, total circled in pink">
             <span class="cover-tag">Sample output</span>
             <div class="cover-head">
@@ -464,6 +488,43 @@
         });
       }, { threshold: 0 });
       ioCta.observe(heroCta);
+    }
+
+    // Magnetic mascot: a subtle cursor-follow tilt on the hero mascot only -
+    // one focal element, clamped small, so it reads as alive rather than
+    // gimmicky. Skipped on touch devices (no hover/mousemove) and when the
+    // visitor prefers reduced motion.
+    var mascotWrap = document.querySelector('.mascot-wrap');
+    var heroArt = document.querySelector('.hero-art');
+    var prefersReduced = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    var hasHover = window.matchMedia && window.matchMedia('(hover: hover)').matches;
+    if (mascotWrap && heroArt && !prefersReduced && hasHover) {
+      var raf = null, tx = 0, ty = 0, cx = 0, cy = 0, active = false;
+      var tick = function(){
+        cx += (tx - cx) * 0.14;
+        cy += (ty - cy) * 0.14;
+        mascotWrap.style.transform = 'rotate(' + cx.toFixed(2) + 'deg) translateY(' + cy.toFixed(2) + 'px)';
+        if (Math.abs(tx - cx) > 0.05 || Math.abs(ty - cy) > 0.05) {
+          raf = requestAnimationFrame(tick);
+        } else {
+          raf = null;
+        }
+      };
+      heroArt.addEventListener('mousemove', function(e){
+        var r = heroArt.getBoundingClientRect();
+        var dx = (e.clientX - (r.left + r.width * 0.3)) / r.width;
+        var dy = (e.clientY - (r.top + r.height * 0.32)) / r.height;
+        tx = Math.max(-1, Math.min(1, dx)) * 7;   // clamp to +-7deg
+        ty = Math.max(-1, Math.min(1, dy)) * 5;   // clamp to +-5px
+        active = true;
+        if (!raf) raf = requestAnimationFrame(tick);
+      });
+      heroArt.addEventListener('mouseleave', function(){
+        if (!active) return;
+        active = false;
+        tx = 0; ty = 0;
+        if (!raf) raf = requestAnimationFrame(tick);
+      });
     }
   </script>
 </body>
